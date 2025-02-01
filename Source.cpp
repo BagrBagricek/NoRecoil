@@ -43,7 +43,36 @@ void show_state()
 int getRandomY(int min, int max) {
     return min + std::rand() % (max - min + 1);
 }
-void SetRandomOffset()
+void SendMouseMove(int xOffset, int yOffset) {
+    INPUT input = { 0 };
+    input.type = INPUT_MOUSE;
+    input.mi.dx = xOffset;  
+    input.mi.dy = yOffset;  
+    input.mi.dwFlags = MOUSEEVENTF_MOVE;  
+    SendInput(1, &input, sizeof(INPUT)); 
+}
+
+void SetRandomOffset() {
+    while (running) {
+        if (on_off) {
+            if (ADS) {
+                int act_str = getRandomY(-randomizer_str, randomizer_str);
+                if (GetAsyncKeyState(0x01) && GetAsyncKeyState(0x02)) {
+                    SendMouseMove(act_str, 0); 
+                }
+            }
+            else {
+                int act_str = getRandomY(-randomizer_str, randomizer_str);
+                if (GetAsyncKeyState(0x01)) {
+                    SendMouseMove(act_str, 0);  
+                }
+            }
+        }
+        Sleep(10);
+    }
+}
+
+void SetRandomOffset3()
 {
     while (running)
     {
@@ -84,10 +113,49 @@ void SetRandomOffset()
     }
 
 }
+void SetRandomOffset2()
+{
+    while (running)
+    {
+        if (on_off)
+        {
+            if (ADS)
+            {
+                int act_str = getRandomY(-randomizer_str, randomizer_str);
+                if (GetAsyncKeyState(0x01) && GetAsyncKeyState(0x02))
+                {
+                    mouse_event(MOUSEEVENTF_MOVE_NOCOALESCE, act_str, 0, 0, 0);
+                }
+                Sleep(1);
+            }
+            else if (!ADS)
+            {
+                int act_str = getRandomY(-randomizer_str, randomizer_str);
+                if (GetAsyncKeyState(0x01))
+                {
+                    mouse_event(MOUSEEVENTF_MOVE_NOCOALESCE, act_str, 0, 0, 0);
+                }
+                Sleep(1);
+
+            }
+            else
+            {
+                break;
+            }
+
+
+
+        }
+
+    }
+
+}
 void StartRandomizerThread() {
     if (!running) {
         running = true;
         RandomizerThread = std::thread(SetRandomOffset);
+        HANDLE hThread = RandomizerThread.native_handle();
+        SetThreadPriority(hThread, THREAD_PRIORITY_HIGHEST);
     }
 }
 void StopRandmizerThread()
